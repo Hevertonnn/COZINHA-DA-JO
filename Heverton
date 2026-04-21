@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>COZINHA DA JÓ</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<header>
+  🍔 COZINHA DA JÓ
+</header>
+
+<div class="container">
+
+  <!-- MENU (PRODUTOS) -->
+  <div class="menu" id="menu"></div>
+
+  <!-- CARRINHO -->
+  <div class="cart">
+
+    <h2>🛒 Carrinho</h2>
+
+    <div class="cliente">
+      <input type="text" id="nomeCliente" placeholder="Seu nome">
+      <input type="text" id="endereco" placeholder="Endereço de entrega">
+    </div>
+
+    <div id="cart-items"></div>
+
+    <p class="total">Total: R$ <span id="total">0</span></p>
+
+    <button class="btn-finalizar" onclick="finalizarPedido()">
+      Finalizar Pedido
+    </button>
+
+<h3>💳 Forma de pagamento</h3>
+
+<select id="pagamento">
+  <option value="">Selecione</option>
+  <option value="Dinheiro">Dinheiro</option>
+  <option value="Cartão">Cartão</option>
+  <option value="Pix">Pix</option>
+</select>
+
+<div id="pix-area" style="display:none;">
+  <p>🔑 Chave Pix:</p>
+  <strong>27999802794</strong>
+ <p>📷 Escaneie o QR Code:</p>
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=27999802794" id="qr-pix">
+</div>
+
+  </div>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
+const produtos = [
+  { nome: "Polenta", preco: 15, foto: "polenta.png" },
+  { nome: "Feijoada", preco: 30, foto: "feijoada.png" },
+  { nome: "Refrigerante", preco: 5, foto: "refrigerante.jpg" }
+];
+
+let carrinho = [];
+
+function carregarMenu() {
+  const menu = document.getElementById("menu");
+  menu.innerHTML = "";
+
+  produtos.forEach((produto, index) => {
+    const div = document.createElement("div");
+    div.classList.add("item");
+
+    div.innerHTML = `
+      <img src="${produto.foto}" width="50">
+      <h3>${produto.nome}</h3>
+      <p>R$ ${produto.preco}</p>
+      <button onclick="adicionar(${index})">Adicionar</button>
+    `;
+
+    menu.appendChild(div);
+  });
+}
+
+function adicionar(index) {
+  const item = produtos[index];
+  const existente = carrinho.find(p => p.nome === item.nome);
+
+  if (existente) {
+    existente.qtd++;
+  } else {
+    carrinho.push({ ...item, qtd: 1 });
+  }
+
+  atualizarCarrinho();
+}
+
+function atualizarCarrinho() {
+  const cart = document.getElementById("cart-items");
+  cart.innerHTML = "";
+
+  let total = 0;
+
+  carrinho.forEach(item => {
+    total += item.preco * item.qtd;
+
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      ${item.nome} x${item.qtd} - R$ ${item.preco * item.qtd}
+      <button onclick="remover('${item.nome}')">❌</button>
+    `;
+
+    cart.appendChild(div);
+  });
+
+  document.getElementById("total").innerText = total;
+}
+
+function remover(nome) {
+  carrinho = carrinho.filter(item => item.nome !== nome);
+  atualizarCarrinho();
+}
+
+function finalizarPedido() {
+  const nome = document.getElementById("nomeCliente").value;
+  const endereco = document.getElementById("endereco").value;
+  const pagamento = document.getElementById("pagamento").value;
+
+  if (!nome || !endereco || !pagamento) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  let mensagem = "🛒 Pedido:%0A";
+  mensagem += `👤 Nome: ${nome}%0A`;
+  mensagem += `📍 Endereço: ${endereco}%0A`;
+  mensagem += `💳 Pagamento: ${pagamento}%0A%0A`;
+
+  carrinho.forEach(item => {
+    mensagem += `${item.nome} x${item.qtd}%0A`;
+  });
+
+  const total = document.getElementById("total").innerText;
+  mensagem += `%0ATotal: R$ ${total}`;
+
+  const telefone = "27999802794";
+
+  window.open(`https://wa.me/${telefone}?text=${mensagem}`);
+}
+
+// 🔥 RODA TUDO QUANDO A PÁGINA CARREGAR
+window.onload = function () {
+  carregarMenu();
+
+  document.getElementById("pagamento").addEventListener("change", function () {
+    const pixArea = document.getElementById("pix-area");
+
+    if (this.value === "Pix") {
+      pixArea.style.display = "block";
+    } else {
+      pixArea.style.display = "none";
+    }
+  });
+};
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* FUNDO */
+body {
+  background: #f5f5f5;
+  background-image: url(fundo.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* HEADER */
+header {
+  background: #ff3b3f;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+   font-family: Arial, sans-serif;
+}
+
+/* LAYOUT */
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* MENU */
+.menu {
+  flex: 2;
+}
+
+/* CARD PRODUTO */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* IMAGEM */
+.item img {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* TEXTO */
+.item h3 {
+  font-size: 16px;
+}
+
+.item p {
+  color: #555;
+}
+
+/* BOTÃO */
+.item button {
+  margin-left: auto;
+  background: #ff3b3f;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.item button:hover {
+  background: #e12d30;
+}
+
+/* CARRINHO */
+.cart {
+  flex: 1;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
+.cliente input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* TOTAL */
+.total {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* BOTÃO FINAL */
+.btn-finalizar {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #25d366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-finalizar:hover {
+  background: #1ebe5d;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#pix-area {
+  margin-top: 10px;
+  background: #e6fff0;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+
+  .container {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .menu {
+    width: 100%;
+  }
+
+  .cart {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* produtos em coluna */
+  .item {
+    flex-direction: row;
+    padding: 10px;
+  }
+
+  .item img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .item h3 {
+    font-size: 14px;
+  }
+
+  .item p {
+    font-size: 13px;
+  }
+
+  .item button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* botão grande estilo app */
+  .btn-finalizar {
+    font-size: 18px;
+    padding: 15px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+  }
+
+  /* espaço pra não cobrir conteúdo */
+  .cart {
+    padding-bottom: 80px;
+  }
+}
+
+
+/* scroll suave tipo app */
+body {
+  overflow-x: hidden;
+}
+
+/* botão pressionável */
+button:active {
+  transform: scale(0.95);
+}
+
+#pix-area {
+  margin-top: 10px;
+  background: #e6fff0;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+#qr-pix {
+  margin-top: 10px;
+  width: 150px;
+  height: 150px;
+}
